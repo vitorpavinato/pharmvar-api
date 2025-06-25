@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "pharmvar-api-explorer"
+name = "pharmvar-api"
 version = "0.1.0"
 description = "Pharmacogenomics variant analysis using multiple APIs"
 authors = ["Vitor Pavinato <vitor.pavinato@proton.me>"]
