@@ -34,8 +34,8 @@
 #### **Step 1: Setup**
 ```bash
 # 1. Clone
-git clone https://github.com/vitorpavinato/pharmvar-api-explorer.git
-cd pharmvar-api-explorer
+git clone https://github.com/vitorpavinato/pharmvar-api.git
+cd pharmvar-api
 
 # 2. Instalar Poetry (se não tiver installado)
 curl -sSL https://install.python-poetry.org | python3 -
