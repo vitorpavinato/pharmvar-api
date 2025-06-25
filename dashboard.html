@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PharmVar API Explorer - Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-size: 1.2rem;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .metric:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            color: #4a5568;
+            font-size: 0.9rem;
+        }
+
+        .metric-value {
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+
+        .status-healthy { background: #48bb78; }
+        .status-warning { background: #ed8936; }
+        .status-error { background: #f56565; }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4299e1, #3182ce);
+            transition: width 0.5s ease;
+        }
+
+        .quality-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .quality-item {
+            text-align: center;
+            padding: 16px;
+            background: #f7fafc;
+            border-radius: 8px;
+        }
+
+        .quality-percentage {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #4299e1;
+            margin-bottom: 4px;
+        }
+
+        .quality-label {
+            font-size: 0.8rem;
+            color: #4a5568;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .gene-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .gene-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .gene-item:last-child {
+            border-bottom: none;
+        }
+
+        .gene-name {
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .gene-stats {
+            display: flex;
+            gap: 12px;
+            font-size: 0.85rem;
+            color: #4a5568;
+        }
+
+        .refresh-button {
+            background: #4299e1;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s ease;
+            margin: 0 auto;
+            display: block;
+        }
+
+        .refresh-button:hover {
+            background: #3182ce;
+        }
+
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .timestamp {
+            text-align: center;
+            color: white;
+            opacity: 0.8;
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+
+        .recommendations {
+            background: #e6fffa;
+            border-left: 4px solid #38b2ac;
+            padding: 16px;
+            border-radius: 0 8px 8px 0;
+            margin-top: 16px;
+        }
+
+        .recommendations h4 {
+            color: #2d3748;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .recommendations ul {
+            list-style: none;
+        }
+
+        .recommendations li {
+            color: #4a5568;
+            margin-bottom: 4px;
+            font-size: 0.9rem;
+        }
+
+        .recommendations li:before {
+            content: "✓ ";
+            color: #38b2ac;
+            font-weight: bold;
+            margin-right: 6px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧬 PharmVar API Explorer</h1>
+            <p>Dashboard de Monitoramento e Análise Farmacogenômica</p>
+        </div>
+
+        <div class="dashboard-grid">
+            <!-- Estatísticas Gerais -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon" style="background: #e6fffa; color: #38b2ac;">📊</div>
+                    <div class="card-title">Estatísticas do Banco</div>
+                </div>
+                <div id="database-stats">
+                    <div class="metric">
+                        <span class="metric-label">Total de Genes</span>
+                        <span class="metric-value" id="total-genes">-</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Total de Variantes</span>
+                        <span class="metric-value" id="total-variants">-</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Variantes Enriquecidas</span>
+                        <span class="metric-value" id="enriched-variants">-</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Taxa de Enriquecimento</span>
+                        <span class="metric-value" id="enrichment-rate">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status das APIs -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon" style="background: #fff5f5; color: #e53e3e;">🔗</div>
+                    <div class="card-title">Status das APIs</div>
+                </div>
+                <div id="api-status">
+                    <div class="metric">
+                        <span class="metric-label">Ensembl REST API</span>
+                        <span class="metric-value" id="ensembl-status">
+                            <span class="status-indicator status-healthy"></span>Carregando...
+                        </span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">ClinVar API</span>
+                        <span class="metric-value" id="clinvar-status">
+                            <span class="status-indicator status-healthy"></span>Carregando...
+                        </span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Última Atualização</span>
+                        <span class="metric-value" id="last-update">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Qualidade dos Dados -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon" style="background: #fef5e7; color: #dd6b20;">⭐</div>
+                    <div class="card-title">Qualidade dos Dados</div>
+                </div>
+                <div id="data-quality" class="quality-grid">
+                    <div class="quality-item">
+                        <div class="quality-percentage" id="consequences-coverage">-</div>
+                        <div class="quality-label">Consequências</div>
+                    </div>
+                    <div class="quality-item">
+                        <div class="quality-percentage" id="clinical-coverage">-</div>
+                        <div class="quality-label">Dados Clínicos</div>
+                    </div>
+                    <div class="quality-item">
+                        <div class="quality-percentage" id="alleles-coverage">-</div>
+                        <div class="quality-label">Alelos</div>
+                    </div>
+                    <div class="quality-item">
+                        <div class="quality-percentage" id="clinvar-coverage">-</div>
+                        <div class="quality-label">ClinVar</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Genes por Qualidade -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon" style="background: #f0fff4; color: #48bb78;">🧬</div>
+                    <div class="card-title">Genes por Qualidade</div>
+                </div>
+                <div id="genes-quality" class="gene-list">
+                    <!-- Preenchido dinamicamente -->
+                </div>
+            </div>
+
+            <!-- Distribuição Clínica -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon" style="background: #ebf8ff; color: #3182ce;">🏥</div>
+                    <div class="card-title">Significância Clínica</div>
+                </div>
+                <div id="clinical-distribution">
+                    <!-- Preenchido dinamicamente -->
+                </div>
+            </div>
+        </div>
+
+        <button class="refresh-button" onclick="loadDashboard()">🔄 Atualizar Dashboard</button>
+
+        <div class="timestamp">
+            Última atualização: <span id="last-refresh">-</span>
+        </div>
+    </div>
+
+    <script>
+        let dashboardData = {};
+
+        async function loadDashboard() {
+            const refreshButton = document.querySelector('.refresh-button');
+            refreshButton.classList.add('loading');
+            refreshButton.textContent = '🔄 Carregando...';
+
+            try {
+                // Carregar resumo da API
+                const response = await fetch('http://localhost:8000/api/summary');
+                const summaryData = await response.json();
+                
+                // Carregar qualidade das variantes
+                const qualityResponse = await fetch('http://localhost:8000/api/variants/quality');
+                const qualityData = await qualityResponse.json();
+
+                dashboardData = { summary: summaryData, quality: qualityData };
+                updateDashboard();
+
+            } catch (error) {
+                console.error('Erro ao carregar dashboard:', error);
+                alert('Erro ao carregar dados do dashboard. Verifique se a API está rodando.');
+            } finally {
+                refreshButton.classList.remove('loading');
+                refreshButton.textContent = '🔄 Atualizar Dashboard';
+            }
+        }
+
+        function updateDashboard() {
+            const { summary, quality } = dashboardData;
+
+            // Atualizar estatísticas do banco
+            document.getElementById('total-genes').textContent = summary.database_stats.total_genes;
+            document.getElementById('total-variants').textContent = summary.database_stats.total_variants;
+            document.getElementById('enriched-variants').textContent = summary.database_stats.enriched_variants;
+            document.getElementById('enrichment-rate').textContent = summary.database_stats.enrichment_rate + '%';
+
+            // Atualizar status das APIs
+            updateAPIStatus('ensembl', summary.api_health.ensembl);
+            updateAPIStatus('clinvar', summary.api_health.clinvar);
+            
+            const lastUpdate = new Date(summary.timestamp).toLocaleString('pt-BR');
+            document.getElementById('last-update').textContent = lastUpdate;
+
+            // Atualizar qualidade dos dados
+            document.getElementById('consequences-coverage').textContent = quality.overall_quality.consequences_coverage + '%';
+            document.getElementById('clinical-coverage').textContent = quality.overall_quality.clinical_data_coverage + '%';
+            document.getElementById('alleles-coverage').textContent = quality.overall_quality.alleles_coverage + '%';
+            document.getElementById('clinvar-coverage').textContent = quality.overall_quality.clinvar_data_coverage + '%';
+
+            // Atualizar lista de genes
+            updateGenesQuality(quality.by_gene);
+
+            // Atualizar distribuição clínica
+            updateClinicalDistribution(summary.clinical_significance_distribution);
+
+            // Adicionar recomendações se disponíveis
+            if (summary.system_recommendations) {
+                addRecommendations(summary.system_recommendations);
+            }
+
+            // Atualizar timestamp
+            document.getElementById('last-refresh').textContent = new Date().toLocaleString('pt-BR');
+        }
+
+        function updateAPIStatus(api, status) {
+            const element = document.getElementById(api + '-status');
+            const statusClass = status === 'healthy' ? 'status-healthy' : 
+                              status === 'warning' ? 'status-warning' : 'status-error';
+            const statusText = status === 'healthy' ? 'Saudável' : 
+                             status === 'warning' ? 'Atenção' : 'Erro';
+            
+            element.innerHTML = `<span class="status-indicator ${statusClass}"></span>${statusText}`;
+        }
+
+        function updateGenesQuality(genes) {
+            const container = document.getElementById('genes-quality');
+            container.innerHTML = '';
+
+            genes.forEach(gene => {
+                const geneItem = document.createElement('div');
+                geneItem.className = 'gene-item';
+                
+                const enrichmentColor = gene.enrichment_percentage >= 80 ? '#48bb78' : 
+                                      gene.enrichment_percentage >= 50 ? '#ed8936' : '#e53e3e';
+                
+                geneItem.innerHTML = `
+                    <div class="gene-name">${gene.gene_symbol}</div>
+                    <div class="gene-stats">
+                        <span>${gene.enriched_variants}/${gene.total_variants}</span>
+                        <span style="color: ${enrichmentColor}; font-weight: 600;">
+                            ${gene.enrichment_percentage}%
+                        </span>
+                    </div>
+                `;
+                
+                container.appendChild(geneItem);
+            });
+        }
+
+        function updateClinicalDistribution(distribution) {
+            const container = document.getElementById('clinical-distribution');
+            container.innerHTML = '';
+
+            if (Object.keys(distribution).length === 0) {
+                container.innerHTML = '<div class="metric"><span class="metric-label">Nenhum dado clínico disponível</span></div>';
+                return;
+            }
+
+            Object.entries(distribution).forEach(([significance, count]) => {
+                const metric = document.createElement('div');
+                metric.className = 'metric';
+                
+                const label = significance.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                
+                metric.innerHTML = `
+                    <span class="metric-label">${label}</span>
+                    <span class="metric-value">${count}</span>
+                `;
+                
+                container.appendChild(metric);
+            });
+        }
+
+        function addRecommendations(recommendations) {
+            // Adicionar recomendações no final da primeira coluna se não existir
+            const firstCard = document.querySelector('.card');
+            let recDiv = document.querySelector('.recommendations');
+            
+            if (!recDiv) {
+                recDiv = document.createElement('div');
+                recDiv.className = 'recommendations';
+                firstCard.appendChild(recDiv);
+            }
+
+            recDiv.innerHTML = `
+                <h4>Recomendações do Sistema</h4>
+                <ul>
+                    ${recommendations.map(rec => `<li>${rec}</li>`).join('')}
+                </ul>
+            `;
+        }
+
+        // Carregar dashboard ao inicializar
+        document.addEventListener('DOMContentLoaded', loadDashboard);
+
+        // Auto-refresh a cada 30 segundos
+        setInterval(loadDashboard, 30000);
+    </script>
+</body>
+</html>
