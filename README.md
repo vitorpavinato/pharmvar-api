@@ -110,7 +110,7 @@ poetry run python serve_dashboard.py
 
 #### **Estrutura**
 ```
-pharmvar-api-explorer/
+pharmvar-api/
 ├── app/                     # Código da API
 │   ├── main.py             # FastAPI app
 │   ├── clients/            # Clientes APIs externas
@@ -260,7 +260,7 @@ pharmvar_api  | INFO:     192.168.65.1:21368 - "GET /api/variants/quality HTTP/1
 #### 5. **Controle de Versão** 📁
 
 **GitHub** com organização profissional:
-- **Repositório**: https://github.com/vitorpavinato/pharmvar-api-explorer
+- **Repositório**: https://github.com/vitorpavinato/pharmvar-api
 
 ---
 
